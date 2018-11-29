@@ -1,9 +1,9 @@
-# DrEcco/web/mmc691/drecco2016
+# DrEcco
 Collection of Games for the DrEcco Website
 
 ## Writing A Game
 
-To write a game compatible with the Dr. Ecco Website the main entry point must be index.php. The CIMS server only runs PHP scripts, so your game's main page will have to be in PHP. Aside from that you can write the code as you wish. If you want to see example games to get started there are plenty in the games folder.
+To write a game compatible with the Dr. Ecco Website the main entry point must be `index.php`. The CIMS server only runs PHP scripts, so your game's main page will have to be in PHP. Aside from that you can write the code as you wish. If you want to see example games to get started there are plenty in the games folder.
 
 ## Testing 
 
