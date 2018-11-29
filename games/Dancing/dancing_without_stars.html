@@ -1,0 +1,1040 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Dancing Without Stars</title>
+        <meta name="description" content="Dancing Without Stars for two players">
+        <meta name="author" content="Aaron McKinstry, Ted Wong">
+    </head>
+
+    <body>
+        <table>
+            <tbody id="board"></tbody>
+        </table>
+        
+        <div id="interface">
+            <b>Choreographer Name:</b>
+            <input id="choreographer-name"></input>
+            <br>
+            
+            <b>Spoiler Name:</b>
+            <input id="spoiler-name"></input>
+            <br>
+            
+            <button id="clear-moves-button"><b>Clear Moves</b></button>
+            <br>
+            
+            <button id="finish-turn-button"><b>Finish Turn</b></button>
+            <br>
+            
+            <b>Player Turn:</b>
+            <input id="turn-indicator" type="text" readonly></input>
+            <br>
+            
+            <b>Score:</b>
+            <input id="score-indicator" type="text" readonly></input>
+            <br>
+            
+            <b>Game Status:</b>
+            <input id="game-status-indicator" type="text" readonly></input>
+            <br>
+            
+            <button id="new-game-button"><b>Start a New Game</b></button>
+            <br>
+            
+            <button id="replay-game-button"><b>Replay Game</b></button>
+            <br>
+            
+            <button id="save-score-button"><b>Save Score</b></button>
+            <br>
+            
+            <b>Board Length/Height:</b>
+            <input id="board-size" type="text"></input>
+            <br>
+            
+            <b>Number of Dancers:</b>
+            <input id="number-of-dancers" type="text"></input>
+            <br>
+            
+            <b>Number of Stars:</b>
+            <input id="number-of-stars" type="text"></input>
+            <br>
+        </div>
+        
+        <style>
+            hr {
+                border: 0px;
+                height: 7px;
+            }
+            
+            table {
+                border-spacing: 0px;
+            }
+            
+            .square {
+                width: 50px;
+                height: 50px;
+                background: gray;
+                border-style: solid;
+                border-color: dimgray;
+                border-width: 3px;
+                margin: 0;
+                padding: 0;
+                
+                text-align: center;
+                vertical-align: middle;
+                line-height: 100%;
+                font-size: 40px;
+            }
+            
+            .square.red-dancer {
+                background-image: url("red-dancer.png");
+                background-size: cover;
+                /* image taken from http://cdn.mysitemyway.com/etc-mysitemyway/icons/legacy-previews/icons/simple-red-glossy-icons-sports-hobbies/047738-simple-red-glossy-icon-sports-hobbies-people-ballet-dancer.png */
+            }
+            
+            .square.blue-dancer {
+                background-image: url("blue-dancer.png");
+                background-size: cover;
+                /* image taken from http://cdn.mysitemyway.com/etc-mysitemyway/icons/legacy-previews/icons/simple-red-glossy-icons-sports-hobbies/047738-simple-red-glossy-icon-sports-hobbies-people-ballet-dancer.png */
+            }
+            
+            .square.star {
+                background-image: url("star.png");
+                background-size: cover;
+                /* image taken from http://www.wiu.edu/university_technology/stars/_images/star.png */
+            }
+            
+            .left-arrow:after {
+                content: '\2190'
+            }
+            
+            .up-arrow:after {
+                content: '\2191';
+            }
+            
+            .right-arrow:after {
+                content: '\2192';
+            }
+            
+            .down-arrow:after {
+                content: '\2193';
+            }
+            
+            .up-left-arrow:after {
+                content: '\2196';
+            }
+            
+            .up-right-arrow:after {
+                content: '\2197';
+            }
+            
+            .down-right-arrow:after {
+                content: '\2198';
+            }
+            
+            .down-left-arrow:after {
+                content: '\2199';
+            }
+            
+            .question-mark:after {
+                content: '?';
+            }
+            
+            /*made with higher specificity to override .moused-over*/
+            .square.selected {
+                border-color: white
+            }
+            
+            .moused-over {
+                border-color: black
+            }
+        </style>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+        
+        <script>
+            function saveScore() {
+                if (gameSpace.currentGame.getState() != Game.GAME_ENDED) {
+                    return;
+                }
+                
+                var score = gameSpace.currentGame.getChoreographerStepCount();
+                var spoilerName = $("#spoiler-name").val();
+                var choreographerName = $("#choreographer-name").val();
+                if (spoilerName === "" || choreographerName === "") {
+                    alert("A player name isn't entered.\nEnter one.\nRight now.");
+                    return;
+                }
+                
+                jQuery.ajax("../../dbman/saveScore.php", {
+                    playername: "chor_"+choreographerName+"_vs_spoil_"+spoilerName,
+                    gamename: "Dancing",
+                    score: score
+                });
+            }
+        </script>
+        
+        <script>
+            class Point {
+                static equal(p,q) {
+                    return p.x == q.x && p.y == q.y;
+                }
+                
+                static add(p,q) {
+					if (q.x == -2 && q.y == -2)
+						return {x:-1, y:-1};
+                    return {x: p.x+q.x, y: p.y+q.y};
+                }
+                
+                static toString(p) {
+                    return "(row " + p.x + ", column " + p.y + ")";
+                }
+            }
+        </script>
+        
+        <script>
+			Math.seed = function(s) {
+    			return function() {
+        			s = Math.sin(s) * 10000; return s - Math.floor(s);
+    			};
+			};
+
+            class Game {
+
+                // ---------------- PUBLIC INTERFACE ----------------
+                /*
+                 * return values for getSquare(x,y) (accessed as "Game.EMPTY", etc.)
+                 */
+                static get EMPTY () { return 0; }
+                static get STAR () { return 1; }
+                static get RED_DANCER () { return 2; }
+                static get BLUE_DANCER () { return 3; }
+                
+                
+                static get RANDOM_TELEPORT () { return { x:-1,y:-1}; }
+                
+                /*
+                 * return values for getState() (accessed as "Game.CHOREOGRAPHER_TURN", etc.)
+                 */
+                static get CHOREOGRAPHER_TURN () { return 0; }
+                static get SPOILER_TURN () { return 1; }
+                static get GAME_ENDED () { return -1; }
+                
+                constructor(boardSize, numberOfDancerPairs, numberOfStars, seed) {
+                    //initialize new game, set turn to choreographer, etc.
+
+                    //member variables
+                    this.playerTurn = Game.CHOREOGRAPHER_TURN;
+                    this.steps = 0;
+                    this.red_count = numberOfDancerPairs;
+                    this.blue_count = numberOfDancerPairs;
+                    this.star_count = numberOfStars;
+					this.red = new Array(this.red_count);
+					this.blue = new Array(this.blue_count);
+                    this.star = new Array(this.star_count);
+
+					var random1 = Math.seed(seed);
+					var random2 = Math.seed(random1());
+					Math.random = Math.seed(random2());
+
+
+                    this.board = new Array(boardSize);
+                    for (var i = 0; i < this.board.length; i++) {
+                        this.board[i] = new Array(boardSize);
+                    }
+
+                    //initialize board
+                    for (var i = 0; i < this.board.length; i++) {
+                        for (var j = 0; j < this.board.length; j++) {
+                            this.board[i][j] = Game.EMPTY;
+                        }
+                    }
+                    this.setDancerLocations(numberOfDancerPairs);
+                    this.setStarLocations(numberOfStars);
+                }
+                
+                /*
+                 * oldPositions: array of {x:number,y:number} objects;
+                 *               oldPositions[3].x is the x-coordinate of a game piece to be moved.
+                 * newPositions: array of {x:number,y:number} objects
+                 *               newPositions[3].x is x-coordinate of [ the destination of the game piece currently at oldPositions[3] ].
+                 * return value: true if move is successful, false otherwise
+                 * 
+                 * Note that oldPositions/newPositions must be the same length, but that length can vary.
+                 * Any [game piece in a position which is not listed in oldPositions] is not moved. 
+                 */
+                makeMove(oldPositions, newPositions) {
+                    if (this.playerTurn == Game.CHOREOGRAPHER_TURN) {
+                        var valid = this.makeDancerMove(oldPositions, newPositions);
+                        if (valid) {
+                            this.steps++;
+                            if (this.isGameOverRecursive(this.board))
+                                this.playerTurn = Game.GAME_ENDED;
+                            else
+                                this.playerTurn = Game.SPOILER_TURN;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else if (this.playerTurn == Game.SPOILER_TURN) {
+                        var valid = this.makeStarMove(oldPositions, newPositions);
+                        if (valid) {
+                            this.playerTurn = Game.CHOREOGRAPHER_TURN;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+                
+                getChoreographerStepCount() {
+                    return this.steps;
+                }
+                
+                getBoardSize() {
+                    return this.board.length;
+                }
+
+                /*
+                 * return value: Game.CHOREOGRAPHER_TURN if it's choreographer's turn;
+                 *               Game.SPOILER_TURN if spoiler's;
+                 *               Game.GAME_ENDED if game is over. 
+                 */
+                getState() {
+                    return this.playerTurn;
+                }
+
+                /*
+                 * return value: Game.EMPTY, Game.STAR, Game.RED_DANCER, or Game.BLUE_DANCER
+                 */
+                getSquare(p) {
+                    return this.board[p.x][p.y];
+                }
+
+
+                // ---------------- PRIVATE INTERFACE ----------------
+
+                getRandomUnoccupiedPosition() {
+                    var x = Math.floor(Math.random() * this.board.length);
+                    var y = Math.floor(Math.random() * this.board.length);
+                    while (this.board[x][y] != Game.EMPTY) {
+                        x = Math.floor(Math.random() * this.board.length);
+                        y = Math.floor(Math.random() * this.board.length);
+                    }
+                    return {x:x, y:y};
+                }
+
+                setDancerLocations(d) {
+                    for (var i = 0; i < d; i++) {
+                        // create red dancer
+                        var p = this.getRandomUnoccupiedPosition();
+                        this.board[p.x][p.y] = Game.RED_DANCER;
+						this.red[i] = p;
+                    }
+                    for (var i = 0; i < d; i++) {
+                        // create blue dancer
+                        var p = this.getRandomUnoccupiedPosition();
+                        this.board[p.x][p.y] = Game.BLUE_DANCER;
+						this.blue[i] = p;
+                    }
+                }
+
+                setStarLocations(s) {
+                    for (var i = 0; i < s; i++) {
+                        var p = this.getRandomUnoccupiedPosition();
+                        this.board[p.x][p.y] = Game.STAR;
+						while (this.are_stars_too_close(this.board)) {
+							this.board[p.x][p.y] = Game.EMPTY;
+	                        p = this.getRandomUnoccupiedPosition();
+							this.board[p.x][p.y] = Game.STAR;
+						}
+						this.star[i] = p;
+                    }
+                }
+                
+				myIndexOf(arr, obj) {
+					for (var i = 0; i < arr.length; i++) {
+						if (arr[i].x == obj.x && arr[i].y == obj.y)
+							return i;
+					}
+					return -1;
+				}
+				
+				
+				makeDancerMove(old, newPositions) {
+
+
+					var new_board = new Array(this.board.length);
+					var new_red = [];
+					var new_blue = [];
+					var orig_red = angular.copy(this.red);
+					var orig_blue = angular.copy(this.blue);
+
+					for (var i = 0; i < new_board.length; i++) {
+						new_board[i] = new Array(this.board.length);
+					}
+					for (var i = 0; i < this.board.length; i++) {
+						for (var j = 0; j < this.board.length; j++) {
+							if (this.board[i][j] == Game.STAR)
+								new_board[i][j] = Game.STAR;
+							else
+								new_board[i][j] = Game.EMPTY;
+						}
+					}
+					
+					
+					for (var d = 0; d < old.length; d++) {
+						
+						if (!this.isAdjacentMove(old[d].x, old[d].y, newPositions[d].x, newPositions[d].y))
+							return false;
+							
+						if (this.board[old[d].x][old[d].y] == Game.RED_DANCER) {
+							if (this.board[newPositions[d].x][newPositions[d].y] != Game.STAR) {
+								new_board[newPositions[d].x][newPositions[d].y] = Game.RED_DANCER;
+								new_red.push(newPositions[d]);
+								var idx = this.myIndexOf(orig_red, old[d]);
+								if (idx > -1)
+									orig_red.splice(idx, 1);
+								else {
+									return false;
+								}
+							} else {
+								return false;
+							}
+						} else if (this.board[old[d].x][old[d].y] == Game.BLUE_DANCER) {
+							if (this.board[newPositions[d].x][newPositions[d].y] != Game.STAR) {
+								new_board[newPositions[d].x][newPositions[d].y] = Game.BLUE_DANCER;
+								new_blue.push(newPositions[d]);
+								var idx = this.myIndexOf(orig_blue, old[d]);
+								if (idx > -1)
+									orig_blue.splice(idx, 1);
+								else {
+									console.log("not in array")
+									return false;
+								}
+							} else {
+								console.log("cant move to star")
+								return false;
+							}
+						} else {
+							return false;
+						}
+					}			
+					for (var i = 0; i < orig_red.length; i++) {
+						new_board[orig_red[i].x][orig_red[i].y] = Game.RED_DANCER;
+						new_red.push(orig_red[i]);
+					}
+					for (var i = 0; i < orig_blue.length; i++) {
+						new_board[orig_blue[i].x][orig_blue[i].y] = Game.BLUE_DANCER;
+						new_blue.push(orig_blue[i]);
+					}
+					var new_red_count = 0;
+					var new_blue_count = 0;
+					for (var i = 0; i < this.board.length; i++) {
+						for (var j = 0; j < this.board.length; j++) {
+							if (new_board[i][j] == Game.RED_DANCER)
+								new_red_count++;
+							else if (new_board[i][j] == Game.BLUE_DANCER)
+								new_blue_count++;
+						}
+					}
+					if (new_red_count != this.red_count || new_blue_count != this.blue_count)
+						return false;
+
+					this.board = angular.copy(new_board);
+					this.red = angular.copy(new_red);
+					this.blue = angular.copy(new_blue);
+
+					return true;
+				}
+                
+				makeStarMove(old, newPositions) {
+
+					var new_board = new Array(this.board.length);
+					var new_star = [];
+					var orig_star = angular.copy(this.star);
+
+					for (var i = 0; i < new_board.length; i++) {
+						new_board[i] = new Array(this.board.length);
+					}
+					for (var i = 0; i < this.board.length; i++) {
+						for (var j = 0; j < this.board.length; j++) {
+							if (this.board[i][j] == Game.RED_DANCER)
+								new_board[i][j] = Game.RED_DANCER;
+							else if (this.board[i][j] == Game.BLUE_DANCER)
+								new_board[i][j] = Game.BLUE_DANCER;
+							else
+								new_board[i][j] = Game.EMPTY;
+						}
+					}
+					
+					for (var s = 0; s < old.length; s++) {
+
+						if (!this.isAdjacentMove(old[s].x, old[s].y, newPositions[s].x, newPositions[s].y)) {
+							return false;
+						}
+						if (this.board[old[s].x][old[s].y] == Game.STAR) {
+							if (newPositions[s].x == -1 && newPositions[s].y == -1) {
+								var p = this.getRandomUnoccupiedPosition();
+								new_board[p.x][p.y] = Game.STAR;
+								while (this.are_stars_too_close(this.board)) {
+									new_board[p.x][p.y] = Game.EMPTY;
+	                        		p = this.getRandomUnoccupiedPosition();
+									new_board[p.x][p.y] = Game.STAR;
+								}
+								new_star.push(p);
+								var idx = this.myIndexOf(orig_star, old[s]);
+								if (idx > -1)
+									orig_star.splice(idx, 1);
+								else {
+									return false;
+								}
+							} else if (this.board[newPositions[s].x][newPositions[s].y] != Game.RED_DANCER && this.board[newPositions[s].x][newPositions[s].y] != Game.BLUE_DANCER) {
+								new_board[newPositions[s].x][newPositions[s].y] = Game.STAR;
+								new_star.push(newPositions[s]);
+								var idx = this.myIndexOf(orig_star, old[s]);
+								if (idx > -1)
+									orig_star.splice(idx, 1);
+								else {
+									return false;
+								}
+							} else {
+								return false;
+							}
+						} else {
+							return false;
+						}
+					}
+					for (var i = 0; i < orig_star.length; i++) {
+						new_board[orig_star[i].x][orig_star[i].y] = Game.STAR;
+						new_star.push(orig_star[i]);
+					}
+					var new_star_count = 0;
+					for (var i = 0; i < this.board.length; i++) {
+						for (var j = 0; j < this.board.length; j++) {
+							if (new_board[i][j] == Game.STAR)
+								new_star_count++;
+						}
+					}
+					
+					if (new_star_count != this.star_count) {
+						return false;
+					}
+
+					if (this.are_stars_too_close(new_board)) {
+						return false;
+					}
+					this.board = angular.copy(new_board);
+					this.star = angular.copy(new_star);
+
+					return true;
+				}
+
+
+				are_stars_too_close(b) {
+					for (var i = 0; i < b.length; i++) {
+						for (var j = 0; j < b.length; j++) {
+							if (b[i][j] == Game.STAR) {
+								for (var k = i-1; k <= i+1; k++) {
+									for (var l = j-1; l <= j+1; l++) {
+										if (k == i && l == j)
+											continue;
+										if (this.isValidPosition(k, l) && b[k][l] == Game.STAR)
+											return true;
+									}
+                				}
+							}
+						}
+					}
+					return false;
+				}
+
+				isValidPosition(x,y) {
+					return !(x < 0 || x >= this.board.length || y < 0 || y >= this.board.length);
+				}
+
+
+                isAdjacentMove(xCur, yCur, xNew, yNew) {
+					if (xNew == -1 && yNew == -1)
+						return true;
+                    if ((xCur == xNew && (Math.abs(yNew - yCur) == 1)) || (yCur == yNew && (Math.abs(xNew - xCur) == 1)))
+                        return true;
+                    if (xCur == xNew && yCur == yNew)
+                        return true;
+                    if (xCur == 0 && yCur == 0 && xNew == 1 && yNew == 1)
+                        return true;
+                    if (xCur == 0 && yCur == this.board.length - 1 && xNew == 1 && yNew == this.board.length - 2)
+                        return true;
+                    if (xCur == this.board.length - 1 && yCur == 0 && xNew == this.board.length - 2 && yNew == 1)
+                        return true;
+                    if (xCur == this.board.length - 1 && yCur == this.board.length - 1 && xNew == this.board.length - 2 && yNew == this.board.length - 2)
+                        return true;
+                    return false;
+                }
+
+                getNearby(board, x, y, piece) {
+                    var nearby = [];
+                    if (y > 0 && board[x][y-1] == piece)
+                        nearby.push([x, y-1]);
+                    if (x > 0 && board[x-1][y] == piece)
+                        nearby.push([x-1, y]);
+                    if (x < board.length-1 && board[x+1][y] == piece)
+                        nearby.push([x+1, y]);
+                    if (y < board.length-1 && board[x][y+1] == piece)
+                        nearby.push([x, y+1]);
+                    return nearby;
+                }
+
+                isGameOverRecursive(b) {
+                    for (var i = 0 ; i < b.length; i++) {
+                        for (var j = 0; j < b.length; j++) {
+                            if (b[i][j] == Game.RED_DANCER) {
+                                var nearby = this.getNearby(b, i, j, Game.BLUE_DANCER)
+                                for (var k = 0; k < nearby.length; k++) {
+                                    var new_b = angular.copy(b);
+                                    new_b[i][j] = Game.EMPTY;
+                                    new_b[nearby[k][0]][nearby[k][1]] = Game.EMPTY;
+                                    if (this.isGameOverRecursive(new_b))
+                                        return true;
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+
+            }
+        </script>
+        
+        <script>
+            class GameInterfaceDFA {
+
+                // ---------------- PRIVATE INTERFACE ---------------
+                static get BOARD_SIZE () { return gameSpace.currentGame.getBoardSize(); }
+                static get UPPER_LEFT_CORNER () { return {x:0, y:0}; }
+                static get UPPER_RIGHT_CORNER () { return {x:0, y:GameInterfaceDFA.BOARD_SIZE-1}; }
+                static get LOWER_RIGHT_CORNER () { return {x:GameInterfaceDFA.BOARD_SIZE-1, y:GameInterfaceDFA.BOARD_SIZE-1}; }
+                static get LOWER_LEFT_CORNER () { return {x:GameInterfaceDFA.BOARD_SIZE-1, y:0}; }
+                
+                canSelect(p) {
+                    if (gameSpace.currentGame.getState() == Game.CHOREOGRAPHER_TURN) {
+                        if (gameSpace.currentGame.getSquare(p) == Game.RED_DANCER)
+                            return true;
+                        else if (gameSpace.currentGame.getSquare(p) == Game.BLUE_DANCER)
+                            return true;
+                    }
+                    else if (gameSpace.currentGame.getState() == Game.SPOILER_TURN) {
+                        if (gameSpace.currentGame.getSquare(p) == Game.STAR)
+                            return true;
+                    }
+                }
+                
+                // ---------------- PUBLIC INTERFACE ----------------
+                
+                static get NOTHING_SELECTED () { return {x:-1,y:-1}; }
+                
+                static get NO_OVERLAY () { return 0; }
+                static get UP_ARROW () { return 1; }
+                static get RIGHT_ARROW () { return 2; }
+                static get DOWN_ARROW () { return 3; }
+                static get LEFT_ARROW () { return 4; }
+                static get UP_LEFT_ARROW () { return 5; }
+                static get UP_RIGHT_ARROW () { return 6; }
+                static get DOWN_RIGHT_ARROW () { return 7; }
+                static get DOWN_LEFT_ARROW () { return 8; }
+                static get QUESTION_MARK () { return 9; }
+                
+                constructor(boardLength) {
+                    var i,j;
+                    
+                    this.board = new Array(boardLength);
+                    for (i = 0; i < boardLength; ++i) {
+                        this.board[i] = new Array(boardLength);
+                        for (j = 0; j < boardLength; ++j)
+                            this.board[i][j] = GameInterfaceDFA.NO_OVERLAY;
+                    }
+                    
+                    this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                }
+
+                clickSquare(p) {
+                    if (this.canSelect(p)) {
+                        if (!Point.equal(p,this.selected))
+                            this.selected = {x:p.x,y:p.y};
+                        else
+                            this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressW() {
+                    if (!Point.equal(this.selected, GameInterfaceDFA.NOTHING_SELECTED)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.UP_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressA() {
+                    if (!Point.equal(this.selected, GameInterfaceDFA.NOTHING_SELECTED)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.LEFT_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressS() {
+                    if (!Point.equal(this.selected, GameInterfaceDFA.NOTHING_SELECTED)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.DOWN_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressD() {
+                    if (!Point.equal(this.selected, GameInterfaceDFA.NOTHING_SELECTED)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.RIGHT_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressC() {
+                    if (Point.equal(this.selected, GameInterfaceDFA.UPPER_LEFT_CORNER)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.DOWN_RIGHT_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                    else if (Point.equal(this.selected, GameInterfaceDFA.UPPER_RIGHT_CORNER)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.DOWN_LEFT_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                    else if (Point.equal(this.selected, GameInterfaceDFA.LOWER_RIGHT_CORNER)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.UP_LEFT_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                    else if (Point.equal(this.selected, GameInterfaceDFA.LOWER_LEFT_CORNER)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.UP_RIGHT_ARROW;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressR() {
+                    if (!Point.equal(this.selected, GameInterfaceDFA.NOTHING_SELECTED)
+                            && gameSpace.currentGame.getSquare(this.selected) == Game.STAR) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.QUESTION_MARK;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                pressF() {
+                    if (!Point.equal(this.selected, GameInterfaceDFA.NOTHING_SELECTED)) {
+                        this.board[this.selected.x][this.selected.y] = GameInterfaceDFA.NO_OVERLAY;
+                        this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                    }
+                }
+                
+                finishTurn() {
+                    for (var i = 0; i < this.board.length; ++i)
+                        for (var j = 0; j < this.board.length; ++j)
+                            this.board[i][j] = GameInterfaceDFA.NO_OVERLAY;
+                    this.selected = GameInterfaceDFA.NOTHING_SELECTED;
+                }
+                
+                getSquare(p) {
+                    return this.board[p.x][p.y]
+                }
+                
+                getSelected() {
+                    return {x:this.selected.x, y:this.selected.y};
+                }
+            }
+        </script>
+        
+        <script>
+            gameSpace = {
+                currentGame: null,
+                seed: null,
+                currentGameInterfaceDFA: null,
+                DEFAULT_NUM_DANCER_PAIRS: 5,
+                DEFAULT_BOARD_SIZE: 5,
+                DEFAULT_NUM_STARS: 2,
+                
+                // designed to be accessed like:
+                // MOVEMENT_DELTA[GameInterfaceDFA.UP_ARROW], etc.
+                MOVEMENT_DELTA: [
+                    {x:0, y:0}, //no movement
+                    {x:-1, y:0}, //up
+                    {x:0, y:1}, //right
+                    {x:1, y:0},//down
+                    {x:0, y:-1},//left
+                    {x:-1, y:-1},//up-left direction
+                    {x:-1, y:1},//up-right direction
+                    {x:1, y:1},//down-right direction
+                    {x:1, y:-1},//down-left direction
+					{x:-2, y:-2} // teleport
+                ],
+                
+                gameInProgress: function() {
+                    return this.currentGame !== null && this.currentGame.getState() != Game.GAME_ENDED;
+                },
+                
+                isValidPosition: function(p) {
+                    return p.x < gameSpace.currentGame.getBoardSize()
+                        && p.y < gameSpace.currentGame.getBoardSize()
+                        && p.x >= 0
+                        && p.y >= 0;
+                }
+            };
+            
+            function getTablePositionOfTd(el) {
+                return {
+                    x: el.parentElement.rowIndex,
+                    y: el.cellIndex
+                };
+            }
+            
+            function getTdAtTablePosition(p) {
+                tr = $("#board").children("tr").get(p.x);
+                td = $(tr).children("td").get(p.y);
+                return td;
+            }
+            
+            function getInput(selectorString, defaultValue) {
+                userInput = parseInt($(selectorString).val());
+                if (isNaN(userInput))
+                    return defaultValue;
+                else
+                    return userInput;
+            }
+            
+            function updateIndicators() {
+                var gameState = gameSpace.currentGame.getState();
+                var score = gameSpace.currentGame.getChoreographerStepCount();
+                
+                $("#turn-indicator").val(gameState == Game.CHOREOGRAPHER_TURN
+                    ? "Choreographer"
+                    : gameState == Game.SPOILER_TURN
+                        ? "Spoiler"
+                        : "");
+                $("#score-indicator").val(score);
+                $("#game-status-indicator").val(gameState == Game.GAME_ENDED ? "in progress" : "game over");
+            }
+            
+            function createEmptyBoard() {
+                $("#board").empty();
+                
+                for (i = 0; i < gameSpace.currentGame.getBoardSize(); i++) {
+                    var tr = $(document.createElement("tr"));
+                    for (j = 0; j < gameSpace.currentGame.getBoardSize(); j++) {
+                        var td = $(document.createElement("td"))
+                            .addClass("square")
+                            .mouseover(function() {
+                                $(this).addClass("moused-over");
+                            })
+                            .mouseout(function() {
+                                $(this).removeClass("moused-over");
+                            })
+                            .click(function () {
+                                gameSpace.currentGameInterfaceDFA.clickSquare(getTablePositionOfTd(this));
+                                updateBoard();
+                            });
+                        tr.append(td);
+                    }
+                    $("#board").append(tr);
+                }
+            }
+            
+            function clearBoard() {
+                for (i = 0; i < gameSpace.currentGame.getBoardSize(); ++i) {
+                    for (j = 0; j < gameSpace.currentGame.getBoardSize(); ++j) {
+                        td = getTdAtTablePosition({x:i,y:j});
+                        $(td).removeClass("red-dancer");
+                        $(td).removeClass("blue-dancer");
+                        $(td).removeClass("star");
+                        $(td).removeClass("selected");
+                        $(td).removeClass("up-left-arrow");
+                        $(td).removeClass("up-arrow");
+                        $(td).removeClass("up-right-arrow");
+                        $(td).removeClass("right-arrow");
+                        $(td).removeClass("down-right-arrow");
+                        $(td).removeClass("down-arrow");
+                        $(td).removeClass("down-left-arrow");
+                        $(td).removeClass("left-arrow");
+                        $(td).removeClass("question-mark");
+                        $(td).removeClass("selected");
+                    }
+                }
+            }
+            
+            function fillBoard() {
+                for (var i = 0; i < gameSpace.currentGame.getBoardSize(); ++i) {
+                    for (var j = 0; j < gameSpace.currentGame.getBoardSize(); ++j) {
+                        var p = {x:i,y:j};
+                        var td = getTdAtTablePosition(p);
+                        
+                        switch (gameSpace.currentGame.getSquare(p)) {
+                        case Game.RED_DANCER:
+                            $(td).addClass("red-dancer");
+                            break;
+                        case Game.BLUE_DANCER:
+                            $(td).addClass("blue-dancer");
+                            break;
+                        case Game.STAR:
+                            $(td).addClass("star");
+                        }
+                        
+                        switch (gameSpace.currentGameInterfaceDFA.getSquare(p)) {
+                        case GameInterfaceDFA.UP_LEFT_ARROW:
+                            $(td).addClass("up-left-arrow");
+                            break;
+                        case GameInterfaceDFA.UP_ARROW:
+                            $(td).addClass("up-arrow");
+                            break;
+                        case GameInterfaceDFA.UP_RIGHT_ARROW:
+                            $(td).addClass("up-right-arrow");
+                            break;
+                        case GameInterfaceDFA.RIGHT_ARROW:
+                            $(td).addClass("right-arrow");
+                            break;
+                        case GameInterfaceDFA.DOWN_RIGHT_ARROW:
+                            $(td).addClass("down-right-arrow");
+                            break;
+                        case GameInterfaceDFA.DOWN_ARROW:
+                            $(td).addClass("down-arrow");
+                            break;
+                        case GameInterfaceDFA.DOWN_LEFT_ARROW:
+                            $(td).addClass("down-left-arrow");
+                            break;
+                        case GameInterfaceDFA.LEFT_ARROW:
+                            $(td).addClass("left-arrow");
+                            break;
+                        case GameInterfaceDFA.QUESTION_MARK:
+                            $(td).addClass("question-mark");
+                        }
+                    }
+                }
+                
+                selectedSquare = gameSpace.currentGameInterfaceDFA.getSelected();
+                if (!Point.equal(selectedSquare, GameInterfaceDFA.NOTHING_SELECTED)) {
+                    td = getTdAtTablePosition(selectedSquare);
+                    $(td).addClass("selected");
+                }
+            }
+            
+            function updateBoard() {
+                clearBoard();
+                fillBoard();
+            }
+            
+            function replayGame() {
+                gameSpace.currentGame = new Game(
+                    getInput("#board-size", gameSpace.DEFAULT_BOARD_SIZE),
+                    getInput("#number-of-dancers", gameSpace.DEFAULT_NUM_DANCER_PAIRS),
+                    getInput("#number-of-stars", gameSpace.DEFAULT_NUM_STARS),
+                    gameSpace.seed
+                );
+                createEmptyBoard();
+                gameSpace.currentGameInterfaceDFA = new GameInterfaceDFA(gameSpace.currentGame.getBoardSize());
+                updateBoard();
+                updateIndicators();
+            }
+            
+            function newGame() {
+                gameSpace.seed = Math.floor(Math.random()*1000000000);
+                replayGame();
+            }
+            
+            function onLoad() {
+                $("#new-game-button").click(newGame);
+                
+                $("#replay-game-button").click(replayGame);
+                
+                $("#finish-turn-button").click(function () {
+                    if (!(gameSpace.currentGame && gameSpace.currentGame.getState() != Game.GAME_ENDED))
+                        return;
+                    
+                    //gather changed positions
+                    var oldPositions = [];
+                    var newPositions = [];
+                    
+                    for (var i = 0; i < gameSpace.currentGame.getBoardSize(); ++i) {
+                        for (var j = 0; j < gameSpace.currentGame.getBoardSize(); ++j) {
+                            var oldP = {x:i,y:j};
+                            if (gameSpace.currentGame.getSquare(oldP) == Game.EMPTY)
+                                continue;
+                            
+                            var dir = gameSpace.currentGameInterfaceDFA.getSquare(oldP);
+                            var newP = Point.add(oldP, gameSpace.MOVEMENT_DELTA[dir]);
+                            if (!Point.equal(oldP,newP)) {
+                                if (gameSpace.isValidPosition(newP) || (newP.x == -1 && newP.y == -1)) {
+                                    oldPositions.push(oldP);
+                                    newPositions.push(newP);
+                                }
+                                else {
+                                    alert("Piece at position "
+                                        + Point.toString(newP)
+                                        + " cannot move in the specified direction.");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    
+                    result = gameSpace.currentGame.makeMove(oldPositions, newPositions);
+                    if (!result)
+                        alert("error: invalid move");
+                    gameSpace.currentGameInterfaceDFA.finishTurn();
+                    updateBoard();
+                    updateIndicators();
+                });
+                
+                $("#clear-moves-button").click(function () {
+                    //calls to finishTurn() only updates the *interface* logic;
+                    //it does nothing to the actual game class, and it clears the board;
+                    //thus, it's okay to call finishTurn() for the clear-moves-button
+                    gameSpace.currentGameInterfaceDFA.finishTurn();
+                    updateBoard();
+                });
+                
+                $("#save-score-button").click(saveScore);
+                
+                $(document).keypress(function (e) {
+                    var tag = e.target.tagName.toLowerCase();
+                    if (tag == 'input')
+                        return;
+                    
+                    var c = String.fromCharCode(e.which);
+                    switch (c) {
+                    case 'w':
+                        gameSpace.currentGameInterfaceDFA.pressW();
+                        break;
+                    case 'a':
+                        gameSpace.currentGameInterfaceDFA.pressA();
+                        break;
+                    case 's':
+                        gameSpace.currentGameInterfaceDFA.pressS();
+                        break;
+                    case 'd':
+                        gameSpace.currentGameInterfaceDFA.pressD();
+                        break;
+                    case 'r':
+                        gameSpace.currentGameInterfaceDFA.pressR();
+                        break;
+                    case 'c':
+                        gameSpace.currentGameInterfaceDFA.pressC();
+                        break;
+                    case 'f':
+                        gameSpace.currentGameInterfaceDFA.pressF();
+                    }
+                    
+                    updateBoard();
+                });
+                
+                newGame();
+            }
+            
+            $(onLoad);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Dr Ecco</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--   <link rel="stylesheet" href="/node_modules/normalize.css/normalize.css"/>   -->
+  <!--
+  <script src="../bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
+<link rel="stylesheet" href="../node_modules/normalize.css/normalize.css"/>
+  <link rel="stylesheet" href="../bower_components/html5-boilerplate/dist/css/main.css">-->
+  <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="../node_modules/randomcolor/randomColor.js"></script>
+  <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <script src="view1.js"></script>
+  <script src="Hunter.js"></script>
+  <script src="Prey.js"></script>
+  <script src="Game.js"></script>
+
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Evasion V3</h1>
+  </div>
+  <div class="container">
+    <div class="instr">
+        <p>
+        <b>Instructions:</b> <br />
+        The Red marker in our game is the hunter, while the Green one is the prey. Your goal as a hunter is to catch the prey as soon as possible by building walls to let yourself bouncing around, while your goal as a prey is to avoid being caught as long as possible. The game won't stop until the hunter catches the prey.
+        </p>
+    </div>
+    <div class="instr">
+        <b>Rules of the game:</b>
+        <ul>
+            <li><span style="color:red"> Rule #1: </span>The hunter moves twice as fast as the prey, but it changes direction only by bouncing off a wall, which means you cannot control the moves of it.</li>
+            <li><span style="color:red"> Rule #2: </span>The prey, on the other hand, can move in whichever direction it wants provided it doesn't pass through a wall.</li>
+            <li><span style="color:red"> Rule #3: </span>The hunter catches the prey by building horizontal and vertical walls as its current position to get close to the prey and trap it.</li>
+            <li><span style="color:red"> Rule #4: </span>You can specify the number of walls that the hunter can build(N) and the time interval between building consecutive walls(W).</li>
+        </ul>
+    </div>
+    <div class="instr">
+        <b>The object of the game is to ......</b> catch the prey.
+    </div>
+  </div>
+
+  <div class="container">
+
+  <div class="row" style = "margin-top: 10px">
+    <div class="col-md-6 col-xs-6">
+      <h4 style = "text-align: center;">
+        Game Mode:<span class="label label-default"><label id = "gameMode"></label></span>
+        Hunter:<span class="label label-default"><label id = "HunterName"></label></span>
+        Prey:<span class="label label-default"><label id = "PreyName"></label></span>
+        </h4><h4 style = "text-align: center;">
+        Max Wall Number:<span class="label label-default"><label id = "wallNum"></label></span>
+        Wall Cool Down:<span class="label label-default"><label id = "wallCoolDown"></label></span></h4><h4 style = "text-align: center;">
+        Easy Move:<span class="label label-default"><label id = "easyMove"></label></span>
+
+      </h4>
+      <input type="text" id = "gameMode" style = "display:none" value="true"\>
+      <input type="text" id = "gameEnd" style = "display:none" value="true"\>
+      <input type="text" id = "gameScore" style = "display:none" value="true"\>
+      <input type="text" id = "pName" style = "display:none" value="true"\>
+      <canvas id="canvas" width="303" height="303" style="margin: auto; display: flex;">
+        Your browser does not support the HTML5 canvas tag.
+      </canvas><br><br>
+    </div>
+    <div class="col-md-4 col-xs-4">
+      <br>
+      <textarea id="textArea" rows="10" cols="50" style = "width:100%"readonly></textarea>
+      <!-- <input id="saveName" type="text" placeholder="Your Name..."> -->
+      <button class="btn btn-secondary" id="reset" type="button" onclick = "$('#Setting').modal('show');$('#gameEnd').val('true');">Start</button>
+      <button class="btn btn-secondary" id="end" type="button" onclick = "$('#gameEnd').val('true');">End</button>
+      <button class="btn btn-secondary" id="save_score" type="button" onclick=save()>Save Score</button>
+
+    </div>
+    <div class="col-md-2 col-xs-2">
+        <ul id = "wallArea">
+        </ul>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- <div class="container">
+      <script type="text/ng-template" id="winner_modal.html">
+
+          <div class="modal-body">
+              <img src="images/win.gif" style="width: 100%;">
+          </div>
+      </script>
+
+      <button type="button" class="btn btn-default" ng-click="open()" style="visibility: hidden;" id="modal"></button>
+    <h2 class="title">Last 10 scores</h2>
+  </div> -->
+  <!--<script>
+    window.onload = function() {
+      window.setTimeout(function(){document.getElementById("start_button").click();}, 10 );
+    }
+  </script>-->
+
+  <div id="Setting" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span></button>
+      <h3 class="modal-title">Game Settings</h3>
+    </div>
+    <div class="modal-body">
+      <div class="row">
+      <div class="col-lg-6 col-md-6 col-xs-6">
+        <h4 >Hunter:</h4>  
+          <li> Press "V" to build vertical walls </li>
+          <li> Press "H" to build horizontal walls </li>
+          <li> Press [1-9] or Press the wall to delete corresponding walls</li> 
+        </div>
+        <div class="col-lg-6 col-md-6 col-xs-6">
+          <h4>Prey:</h4>
+            <li> Press arrow keys to move </li>
+        </div>
+        </div>
+      
+      <form id="myForm" class="form-horizontal col-lg-12 col-md-12 col-xs-12" style="margin-left:5px; margin-top:20px">
+        <div class="form-group">
+          <label class="control-label" for="email">Players:</label>
+          <select id = "gameModeInput" class="gameMode">
+            <option value="HvH">Human vs Human</option>
+            <option value="CvH">Com vs Human</option>
+            <option value="HvC">Human vs Com</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Hunter Name:</label>
+          <input id = "HunterNameInput"/>
+        </div>
+        <div class="form-group">
+          <label>Prey Name:</label>
+          <input id = "PreyNameInput"/>
+        </div>
+        <div class="form-group">
+          <label> Max Number of Walls:</label>
+          <input type="number" id = "wallNumInput" min="2" max="10"/>&nbsp;
+          <span style="color:#d44950" id = "wallnumbererror" class="error" display="none"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>Not valid number! Must be between 2 - 9</span>
+        </div>
+        <div class="form-group">
+          <label>Cool Down Time Between Wall Creation:</label> <br>
+          <input class = "form-check-inline" type="radio" name = "WallCoolDown" value="Fast"/>Fast 
+          <input class = "form-check-inline" type="radio" name = "WallCoolDown" value="Medium"/>Medium 
+          <input class = "form-check-inline" type="radio" name = "WallCoolDown" value="Slow"/>Slow 
+          <input class = "form-check-inline" type="radio" name = "WallCoolDown" value="Custom"/>Custom <br>
+          <input type="number" id="wallCoolDownInput"/>&nbsp;<span style="color:#d44950" id = "wallCoolDownerror" class="error" display="none"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>Not valid number! Must be between 1 - 100</span>
+        </div>
+        <div class="form-group">
+          <label class="form-check-label">
+            <input type="checkbox" class="form-check-input" id="easyMoveInput">
+            Enable Easy Move
+          </label>&nbsp;<span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="popover" data-trigger="hover" data-content="Automatic aviod hunter in very close distance"></span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" onclick="checkData()">OK</button>
+        <button class="btn btn-warning" type="button" data-dismiss="modal">Cancel</button>
+    </div>
+  </div><!-- modal content-->
+  </div><!-- modal dialog-->
+  </div><!-- modal -->
+</body>
+</html>

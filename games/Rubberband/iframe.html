@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+	<head>
+		<title>Rubber Band</title>
+		<link rel="stylesheet" type="text/css" href="styles.css">
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	</head>
+		
+	<body>
+		<div id="topTitle">
+            <H1>The Rubber Band Game</H1>
+        </div>
+		
+		<div id="main">
+			<div id="gameArea">
+				<div id="left-pane">
+	                <canvas id="canvas" width="500" height="500">
+	                  Your browser does not support the HTML5 canvas tag.
+	                </canvas>
+	                <div>
+	                	<font size="1">Supported browsers: Firefox, Safari, IE</font>
+	                </div>
+	            </div>
+	            <div id="right-pane">
+	            	<div id="topButtons">
+	                    <button id="settings" type="button" class="btn btn-primary">
+	                        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+	                    </button>
+	                    <button id="help" type="button" class="btn btn-primary">
+	                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+	                    </button>
+                	</div>
+                	<!--Settings Popup-->
+                	<div id="settingsModal" class="modal">
+                		<div class="settingsModalContent">
+                			<span class="settingsClose">x</span>
+                            <label>Number of Rubber Bands</label>
+                            <div class="form-group">
+                                <select id="numBands" class="form-control">
+                                    <option value=4>4</option>
+                                    <option value=5 selected="selected">5</option>
+                                    <option value=6>6</option>
+                                    <option value=7>7</option>
+                                </select>
+                            </div>
+                        </div>
+                	</div>
+                	<!--Help Popup-->
+                	<div id="helpModal" class="modal">
+                		<div class="helpModalContent">
+                			<span class="helpClose">x</span>
+                            <label>Game Tutorial</label>
+                            <div>
+                            	<p>
+	                            	<b>How to Win</b>
+	                            	<br>
+	                            	<font size="2">The objective of the game is to control more nails that your opponent. You gain control of nails by encircling them with rubber bands. Nails that do not touch a rubber band will belong to the player whose rubber band encloses the nail. If both players' bands enclose a nail, the nail belongs to the player whose band is closer to the nail.</font>
+                            	</p>
+                            	<p>
+	                            	<b>Turns</b>
+	                            	<br>
+	                            	<font size="2">Both players play alternately, placing rubber bands on the nails. Players start with 5 bands by default. This number can be changed by making a selection in the settings menu (accesible by the button with the cog icon).</font>    
+	                            </p>
+	                            <p>
+	                            	<b>Rules</b>
+	                            	<br>
+	                            	<ul>
+	                            	<li>You can select a maximum of 4 nails. The minimum is 1</li>
+	                            	<li>You may not place a rubber band on a nail that already has another band touching it</li>
+	                            	<li>Selection order matters. You can only draw convex shapes with the band. Concave shapes are not allowed</li>
+	                            	<li>Any invalid selection is discarded. You may also reselect nails if you wish to change your current selection</li>
+	                            	</ul>
+	                            </p>
+                            </div>
+                        </div>
+                	</div>
+	                <div>
+	                    <button 
+	                    	id="startButton" type="button" class="btn btn-primary">Start Game</button>
+	                    <button 
+	                    	id="resetButton" type="button" class="btn btn-primary">Reset
+	                    	<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+	                    </button>
+	                </div>
+	                <div>
+	                	<button 
+	                		id="reselect" type="button" class="btn btn-primary">Reselect
+	                	</button>
+	                    <button 
+	                    	id="draw" type="button" class="btn btn-primary">Draw
+	                    </button>
+	                </div>
+	                <div id="numPlayerOneNails"></div>
+	                <div id="numPlayerTwoNails"></div>
+	                <div id="message"></div>
+	            </div>
+	    	</div>
+	    </div>
+        <script type="text/javascript" src="rubberband.js"></script>
+	</body>
+</html>

@@ -1,0 +1,86 @@
+body {
+  margin: 0;
+}
+#container {
+  position: absolute;
+  width: 60%;
+  height: 90%;
+  top: 2%;
+  left: 20%;
+  margin: 0 auto;
+}
+
+.slider {
+  overflow-y: hidden;
+
+  transition-property: all;
+  transition-duration: .5s;
+  transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+}
+
+.slider.closed {
+  height: 0;
+  padding: 0;
+}
+
+
+
+#options-container {
+  position: absolute;
+  right: 0;
+  overflow: auto;
+  height: 100%;
+}
+#options {
+  position: relative;
+  margin-top: 80%;
+  right: 0;
+}
+
+#options > div {
+  margin: 10px 0;
+  text-align: right;
+}
+
+#options .label {
+  padding: 5px 0;
+  text-align: center;
+}
+
+#edgedetail {
+  position: relative;
+  right: 0px;
+  width: 200px;
+  padding-left: 10px;
+  box-shadow: 1px 1px 1px 1px;
+}
+#message {
+  text-align: center;
+  width: 25%;
+  position: absolute;
+  top:30%;
+  left: 0;
+  margin: 0 auto;
+  font-size: 18px;
+}
+
+#player-type-options {
+  margin-bottom: 50px;
+}
+#helpChild ul {
+  margin: 0;
+  padding-left:
+}
+#helpChild ul {
+  list-style-type: none;
+}
+#helpChild ul > li {
+  text-indent: -5px;
+}
+#helpChild ul > li:before {
+  content: "-";
+  text-indent: -5px;
+}
+.reload {
+  font-family: Lucida Sans Unicode
+}

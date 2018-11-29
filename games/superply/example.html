@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Superply</title>
+    <link rel="stylesheet" href="css/c04.css"/>
+  </head>
+  <body onload="clickStartGame()">
+    <section id="page2">
+      <div style="width=100%; text-align: center; horizontal-align:middle;"> 
+        <h1><img src="images/SuperplyFinal.png" id="imgSuperply"/></h1>
+      </div>
+      <table id="kingTable">	 
+	  <!-- left column -->
+	  <td width="20%" align="left">
+	   <div class="blueImage">
+	     <img src="images/b3.png" id="imageBlue" alt="" /> 
+		 <img src="images/boomerWithPath.png" id="bluePlayer" alt="" /> 
+		 <section id="blueName"></section>
+		 <textarea class="blueImgDescription" readonly rows="4" cols="50"> The goal of the blue player is to build a blue path across the grid (from the leftmost column to the rightmost). </textarea> 
+	   </div> 
+	  </td>
+	  
+	  <!--  middle column -->
+	  <td width="60%" align="center">
+	    <section id="blackboard">
+	  </section>
+	    <div id="mainAreaDiv">
+	   <table width="100%"> <tr>
+	    <td width="(100/3)%" align="left">
+		<div class="playIcon">
+		   <input type="image" class="icons" id="playImage" src="images/playButton.png" onclick="clickStartGame()"/>
+		   <input class="playIconDescription" value="Start New Game"/>	
+	    </div>
+	    </td>
+	    <td width="(100/3)%" align="center">
+	    <div class="rulesIcon">
+		   <input type="image" class="icons" id="rulesImage" src="images/rules.png" onclick="displayRules()"/>
+		   <input class="rulesIconDescription" value="Show Rules"/>
+	    </div>
+	    </td>
+	    <td width="(100/3)%" align="right">
+		<div class="resetIcon">
+		   <input type="image" id="resetImage" class="icons" src="images/restart.png" onclick="clickRestartGame()"/>	  
+		   <input class="resetIconDescription" value="Reset Board"/>
+	    </div> 
+	    </td>
+	   </tr> </table>
+	  </div>
+	    <br/>
+	    <section id="hint">
+	    </section> <br/>
+	  </td>
+	  
+	  <!-- right column -->
+	  <td width="20%" align="right">
+	   <div class="redImage">
+	       <img src="images/blank.png" id="imageRed" alt="" /> 
+		   <img src="images/brickWithPath.png" id="redPlayer" alt="" />
+		   <section id="redName"></section>
+		   <textarea class="redImgDescription" readonly rows="4" cols="50"> The goal of the red player is to build a red path accross the grid from top to bottom (from first row to the last row).</textarea> 
+	   </div> 
+	  </td>
+	  </table> 
+    </section>
+   
+    <div id="myModal1" class="modal">
+       <div class="modal-content">
+         <div class="modal-body">
+          <h2 id="welcomeMessage">WELCOME TO SUPERPLY</h2>
+		  <div style="float:left; width:70%;" class="rules">
+		  <p>
+		  What is the game about? <br/>
+				You have a multiplication table 1 through 9 along the top and 1 through 9 along the left side. Initially, the interior squares are blank. You then get hints. For example, "the product is less than 30" or "the product contains a 7". Many of the product cells correspond to the hint. The issue is which one to choose.
+<br/><br/>
+Game Description:<br/><br/>
+There are two players, blue and red.
+<br/>
+The goal of the blue player is to build a blue path across the grid (from the leftmost column to the rightmost) where a blue path consists of a sequence blue squares such that the first one is in the left column, the last is in the right column and each square touches the next one in the sequence on a side or on a corner. 
+<br/>
+The goal of the red player is to build a red path from top to bottom.
+<br/>
+To claim a square, the blue/red player must choose one that satisfies the hint he/she gets and that is not already occupied. 
+<br/>
+If the player's selection is not valid the turn goes to the other player.</p>
+		  </div>
+		 <div >
+		  <form>
+			 Blue player's name: 
+			 <input type="text" name="blue" id="BP" value="Player1"
+			 onfocus="if(this.value=='Player1')this.value='';"		
+				onblur="if(this.value=='')this.value='Player1';">
+			 <br />
+			 Red player's name : 
+			 <input type="text" name="red" id="RP" value="Player2" 
+			 onfocus="if(this.value=='Player2')this.value='';"	
+			 onblur="if(this.value=='')this.value='Player2';" >
+			 <br />
+          </form>
+          <br />
+          <button class="mybutton" onclick="confirmGameDetails()" id="playButton">
+		  Lets Play!</button>
+		  </div>
+         </div>
+      </div>
+    </div>
+    <div id="myModal2" class="modal">
+       <div class="modal-content" id="modal2Content">
+         <div class="modal-body">
+           <h2 id="playerWinner" style="text-align:center;"></h2>
+		   <span class="close" onclick="clickClose()">x</span><br />
+           <section id="winner" ><center><img src="images/winner.gif" /><center></section>
+         </div>
+      </div>
+    </div>
+	<div id="myModal3" class="modal">
+       <div class="modal-content">
+         <div class="modal-body">
+           <span class="close" onclick="clickClose()">x</span><br/>
+		   <h2 id="Rules">Rules</h2>
+           <div style="width:auto; height:auto;" class="rules"> <ul>
+			<li>There are two players, blue and red.</li> <br/>
+			<li>Goal of the blue player:<br/>Build a blue path across the grid (from the leftmost column to the rightmost) where a blue path consists of a sequence blue squares such that the first one is in the left column, the last is in the right column and each square touches the next one in the sequence on a side or on a corner.</li> <br/>	
+			<li>Goal of the red player: <br/> Build a red path from top to bottom.</li> <br/>
+            <li>At each turn a hint is shown in the box. Depending on the player to claim a square, the blue/red player must choose a square that satisfies the hint he/she gets and that is not already occupied.</li> <br/>
+            <li>If the player's selection is not valid the turn goes to the other player.</li>
+           </ul> </div>
+         </div>
+      </div>
+	  
+    </div>
+    <script src="js/example.js"></script>
+  </body>  
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Voxel Critter Creator</title>
+    <meta charset="utf-8">
+    <link rel"shortcut icon" href="favicon.ico">
+    <link href="flatui/css/bootstrap.css" rel="stylesheet">
+    <link href="flatui/css/flat-ui.css" rel="stylesheet">
+    <link href="colorpicker/css/colorpicker.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    
+  </head>
+  <body>
+    <div id="instructions">
+      <h3 class="demo-panel-title">#Steps: <span id="step-counter">0</span></h3>
+      
+      <select class="actionsMenu" value="Actions" tabindex="1">
+        <option value="noop" selected="selected">Actions</option>
+        <option value="export">Export PNG</option>
+        <option value="reset">Reset</option>
+        <option value="about">About</option>
+      </select>
+
+      <div class="share mrl">
+        <ul>
+          <li>
+            <label class="share-label" for="share-toggle2">Grid</label>
+            <div data-action="showGrid" class="toggle">
+              <label class="toggle-radio" for="share-toggle2">ON</label>
+              <input type="radio" name="share-toggles" id="share-toggle2" value="toggle1" checked="checked">
+              <label class="toggle-radio" for="share-toggle1">OFF</label>
+              <input type="radio" name="share-toggles" id="share-toggle1" value="toggle2">
+            </div>
+          </li>
+          <li>
+            <label class="share-label" for="share-toggle3">Wireframe</label>
+            <div data-action="setWireframe" class="toggle">
+              <label class="toggle-radio" for="share-toggle4">ON</label>
+              <input type="radio" name="share-toggles2" id="share-toggle4" value="toggle1" checked="checked">
+              <label class="toggle-radio" for="share-toggle3">OFF</label>
+              <input type="radio" name="share-toggles2" id="share-toggle3" value="toggle2">
+            </div>
+          </li>
+        </ul>
+      </div> <!-- /share -->
+      
+      <div class="row color-container">
+        <div class="span3">
+            <div class="btn-group color-picker">
+              <a class="btn btn-primary colorPickButton active" href="#"><i data-color="0" class="color"></i></a>
+              <a class="btn btn-primary colorPickButton" href="#"><i data-color="1" class="color"></i></a>
+              <a class="btn btn-primary colorPickButton" href="#"><i data-color="2" class="color"></i></a>
+              <a class="btn btn-primary colorPickButton" href="#"><i data-color="3" class="color"></i></a>
+              <a class="btn btn-primary colorPickButton" href="#"><i data-color="4" class="color"></i></a>
+              <a class="btn btn-primary colorAddButton" data-color="#000000" href="#"><i data-color="-1" class="colorAdd">++</i></a>
+            </div>
+        </div>
+      </div>
+
+      <div class="row" id="design">
+      </div>
+      
+     <div id="output"></div>
+    </div>
+
+    <div id="firework" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Congratulations</h3>
+      </div>
+      <div class="modal-body">
+        <canvas id="canvas" height="500" style="background-color: #000000;"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Okay!</button>
+      </div>
+    </div>
+    
+    
+    <div id="welcome" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Welcome to Minecraft</h3>
+      </div>
+      <div class="modal-body">
+        <div class="span3 hello">
+          <p>Use your mouse to place blocks.</p>
+          <p><img src="img/critter.png"></p>
+        </div>
+        <div class="span3">
+          <div class="tile controls">
+            <p><h4>Controls</h4></p>
+            <p><strong>click + drag</strong> to adjust angle.</p>
+            <p><strong>click</strong> to place a block.</p>
+            <p><strong>shift</strong> to delete a block.</p>
+            <p><strong>1-5</strong> to change color.</p>
+            <p><strong>+/-</strong> or <strong>scroll</strong> to zoom.</p>
+            <p><strong>wasd</strong> to move the player.</p>
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Okay!</button>
+      </div>
+    </div>
+    
+    <script type="text/javascript" src="js/flatui-deps.js"></script>
+    <script type="text/javascript" src="colorpicker/js/bootstrap-colorpicker.js"></script>
+    <script type="text/javascript" src="bundle.js"></script>
+    <script type="text/javascript" src="firework.js"></script>
+  </body>
+</html>

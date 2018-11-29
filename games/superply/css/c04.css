@@ -1,0 +1,401 @@
+@import url(http://fonts.googleapis.com/css?family=Wellfleet);
+
+body {
+	font-family: 'Wellfleet', times, serif;
+	font-size: 150%;
+	margin: 0px 0px 0px 0px;
+}
+
+#kingTable{
+   max-height: 100%; max-width: 100%;
+   height: auto; width: auto;
+}
+
+#imgSuperply {
+	background-repeat: no-repeat;
+	/*text-indent: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	width: 400px;*/
+	max-height: 20%; max-width: 20%;
+	height: auto; width: auto;
+}
+
+#redPlayer {
+	position: relative; top:10%; left:2%;
+	max-height: 80%; max-width: 75%;
+	height: auto; width: auto;
+}
+
+#bluePlayer  {
+	position: relative; top:15%; right:2%;
+	max-height: 70%; max-width: 70%;
+	height: auto; width: auto;
+}
+
+
+.blueImgDescription {
+    visibility:hidden;
+    left:5%;
+	margin: 20% 1.5%;
+	resize: none;
+	border-radius: 20px;
+
+}
+
+.blueImage:hover  .blueImgDescription {
+    visibility:visible;
+}
+
+.redImgDescription {
+    visibility:hidden;
+    right:5%;
+	resize: none;
+	margin: 20% 1.5%;
+	border-radius: 20px;
+}
+
+.redImage:hover  .redImgDescription {
+    visibility:visible;
+}
+
+#imageRed {
+    max-height: 50%; max-width: 50%; overflow: hidden;
+    height: auto;
+    width: auto;
+    position: relative; top:5%; right:50%;
+}
+
+#imageBlue{
+    max-height: 50%; max-width: 50%; overflow: hidden;
+    height: auto;
+    width: auto;
+    position: relative; top:10%; left:50%;
+}
+
+#redName{
+    position: relative; top:70%; right:20%
+}
+
+#blueName{
+    position: relative; top:70%; left:20%
+}
+
+#page1, #page2 {
+	width: auto; height: auto;
+	left: 0; top: 0; right: 0; bottom: 0;
+	padding: 10px 0px 0px 0px;
+}
+
+#hint {
+   padding: 30px 30px 30px 30px;
+   text-align: center;
+}
+
+#blackboard {
+	background-color: #708090;
+	border: 25px solid #523620;
+	border-radius: 20px;
+	padding: 10px 20px;
+	margin: 0px auto;
+	max-height: 400px; max-width: 500px
+	height: auto; width: auto;
+	text-align: center;
+}
+	
+#mainAreaDiv{
+	padding: 10px 20px 0px 20px;
+	margin: 0px auto;
+	max-height: 50px; max-width: 500px
+	height: auto; width: auto;
+	text-align: center;
+}
+
+#playImage{
+	border-radius: 25px;
+	margin-left: 1%; margin-bottom: 0.5em;
+	display: inline-block;
+	width:32px;
+}
+
+#resetImage{
+	border-radius: 25px;
+	margin: 0px auto;
+	width:32px;
+}
+
+#rulesImage{
+	border-radius: 25px;
+	margin: 0px auto;
+	width:37px;
+}
+
+#mainAreaDiv{
+position:relative;
+}
+input{
+background-color:#FFFCA3;
+font-family: "Verdana";
+border-radius: 5px;
+ font-size: 0.6em;
+}
+.playIconDescription {
+    visibility:hidden;
+	width:118px;
+	float: left;
+	position:relative;
+	top: 0;
+    left: 0;
+}
+
+.playIcon:hover  .playIconDescription {
+    visibility:visible;
+}
+
+.resetIconDescription {
+    visibility:hidden;
+	width:100px;
+	border-radius: 5px;
+	float: right;
+	position:relative;
+	top: 0;
+  right: 0;
+}
+
+.resetIcon:hover  .resetIconDescription {
+    visibility:visible;
+}
+.rulesIcon{
+position:relative;
+}
+.rulesIconDescription {
+    visibility:hidden;
+	width:100px;
+	position:absolute; 
+	border-radius: 5px;	
+	z-index: 1;
+}
+
+.rulesIcon:hover  .rulesIconDescription {
+    visibility:visible;
+}
+
+.grid{
+width: 500px;
+border-radius: 20px;
+margin-left:auto;
+margin-right:auto;
+}
+
+.grid td {
+    cursor:pointer;
+    width: 40px; height:25px;
+    border:2px solid #523620;
+    text-align:center;
+     font-size:15px;
+	border-spacing: 5px;
+	
+	
+}
+
+.grid td.redclicked {
+    background-color:red;
+    font-weight:bold; color:blue;
+}
+
+.grid td.blueclicked {
+    background-color:blue;
+    font-weight:bold; color:red;
+}
+
+.textBox{
+	text-align:center;
+	border: 5px solid #523620;
+	border-radius: 20px;
+	padding: 40px 20px;
+}
+
+.blueBox{
+	background: #428bca;
+  border: darken(#428bca, 5%) solid 1px;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-block;
+  font-size: 18px;
+  padding: 8px 15px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 60px;
+  position: relative;
+  transition: color .1s ease;
+  
+}
+
+.redBox{
+	background: #CC0000;
+  border: darken(#CC0000, 5%) solid 1px;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-block;
+  font-size: 18px;
+  padding: 8px 15px;
+  text-decoration: none;
+  text-align: center;
+  min-width: 60px;
+  position: relative;
+  transition: color .1s ease;
+}
+
+/* THE POPUP WINDOW */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; 
+    padding-bottom: 100px;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+	border-radius:5px;
+    overflow: auto; 
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+#welcomeMessage{
+text-align:center;
+}
+
+#Rules{
+text-align:center;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 80%;
+	height: 80%;
+	border-radius:10px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+    text-align:center;
+}
+
+.modal-body {
+    padding: 2px 5px 40px 10px;
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0} 
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+#sectionButton {
+   padding: 40px 40px;
+   text-align: center;
+} 
+
+/* STYLE FOR ALL BUTTONS */
+.mybutton {
+    background: #4CAF50; 
+  border: darken(#4CAF50, 5%) solid 1px;
+  border-radius: 10px;
+  color: #fff;
+  display: inline-block;
+  font-size: 18px;
+  /*padding: 8px 15px;*/
+  text-decoration: none;
+  text-align: center;
+  min-width: 60px;
+  position: relative;
+  transition: color .1s ease;
+ /* top: 40em;*/
+  
+  
+  
+  &.btn-big{
+    font-size: 18px;
+    padding: 15px 20px;
+    min-width: 100px;
+  }
+}
+.mybutton #playButton{
+padding: 8px 15px;
+}
+
+
+.rules{
+font-size: 70%;
+}
+
+.close {
+    color: green;
+    padding: 15px 32px 0px 32px;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus,
+.mybutton:hover,
+.mybutton:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+.grid tr:first-child
+{
+    border: 1px solid #53f673;
+}
+
+.grid tr:first-child td:first-child
+{
+    border:none;
+	background-color: #708090;
+}
+
+.grid  td:first-child
+{
+	border-radius:100%;
+	color: #fff;
+	background-color:black;
+	border-color: darken(black, 5%) solid 1px;
+	border:none;
+}
+
+.grid tr:first-child td
+{
+	border:none;
+    border-radius:100%;
+	background-color:black;
+	color: #fff;
+	border-color: darken(black, 5%) solid 1px;
+}
+
+.bluepathImage{
+background-image: url('../images/bluePath.png');
+}
+
+.redpathImage{
+background-image: url('../images/redPath.png');
+}
+textarea{
+border
+}

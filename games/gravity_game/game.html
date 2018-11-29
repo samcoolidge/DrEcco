@@ -1,0 +1,40 @@
+<html>
+<head>
+    <script src="../../js/jquery-2.2.4.min.js"></script>
+    <script src="pixi.min.js"></script>
+    <script src="seedrandom.js"></script>
+</head>
+<body>
+    <script id="bgshader" type="shader">
+
+    precision mediump float;
+    uniform float time;
+
+    float rand(vec2 co){
+        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    }
+
+    void main(){
+       float star = pow(rand(vec2(gl_FragCoord.x*.02, gl_FragCoord.y*.02)),1000.0);
+       float red = rand(vec2(gl_FragCoord.x, gl_FragCoord.y))*.5
+                 + sin(rand(vec2(gl_FragCoord.x, gl_FragCoord.y))*time*.01)*.5
+                 +.5;
+       float blue = rand(vec2(gl_FragCoord.x, gl_FragCoord.y))*.5
+                 + sin(rand(vec2(gl_FragCoord.x, gl_FragCoord.y))*time*.01)*.5
+                 +.5;
+       float green = clamp((red + blue)*.5 - .3, 0.0, 1.0);
+
+       float x = (gl_FragCoord.x - 400.0) / 800.0;
+       float y = (gl_FragCoord.y - 300.0) / 600.0;
+       float vignette = 1.0-sqrt(x * x + y * y);
+       gl_FragColor = (vignette)*.1*vec4(.8,.02,1.0,1.0) + vec4(red * star+.03, green * star, blue * star+.05, 1.0);
+    }
+
+    </script>
+
+    <div id="modeSelect" style="display:none;"></div>
+    <div id="planetSelect" style="display:none;"></div>
+    <div id="seed" style="display:none;"></div>
+    <script src="game.js"></script>
+</body>
+</html>

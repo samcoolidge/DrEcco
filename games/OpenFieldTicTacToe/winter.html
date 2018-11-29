@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Open Field Tic Tac Toe</title>
+    <script src="https://code.jquery.com/jquery-2.2.4.js"></script>
+</head>
+<body>
+    <div>
+        First Player Name: <input type="text" id="player1" value="player1"> <br>
+        Second Player Name: <input type="text" id="player2" value="player2"> <br>
+        Board Size: <input type="number" id="boardsize" value="6" min="3"> <br>
+        Number of connecting pieces to win: <input type="number" id="connect" value="4" min="4"> <br>
+        <button onclick="startLoad()">Start</button>
+    </div>
+
+    <div>
+        <canvas width="1024" id="canvas" onmousedown="play(event)" height="768">
+        </canvas>
+    </div>
+
+</body>
+<script type="text/javascript">
+
+var canvas;
+var context;
+var isWhite = false;
+var winner = '';
+var boardsize;
+var step;
+var chessData;
+var connect;
+
+function startLoad() {
+  //connect = parseInt( prompt("Please enter number of connecting pieces to win (>2)", "4") );
+  // while (connect < 3) {
+  //     connect = parseInt( prompt("Please enter number of connecting pieces to win (>2)", "4") );
+  // }
+
+
+  //boardsize = parseInt( prompt("Please enter board size (>3)", "6") );
+  // while (boardsize < 4) {
+  //     boardsize = parseInt( prompt("Please enter board size (>3)", "6") );
+  // }
+
+    connect = parseInt(document.getElementById("connect").value);
+    boardsize = parseInt(document.getElementById("boardsize").value);
+
+
+    chessData = [];
+    chessData = new Array(boardsize);
+    for (var x = 0; x < boardsize; x++) {
+        chessData[x] = new Array(boardsize);
+        for (var y = 0; y < boardsize; y++) {
+            chessData[x][y] = 0;
+        }
+    }
+
+    winner = '';
+
+  drawRect();
+}
+
+
+
+function drawRect() {
+  var interval = 40;
+  var sy = 80;
+  var ey = sy + interval * (boardsize-1);
+  var sx = 180;
+  var ex = sx + interval * (boardsize-1);
+
+  canvas = document.getElementById("canvas");
+  context = canvas.getContext("2d");
+    context.strokeStyle = 'black';
+    context.lineWidth = 1;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    step = boardsize * boardsize;
+
+
+  context.fillStyle = '#FFA500';
+  context.fillRect(0, 0, ex + 200, ey + 200);
+
+  // context.strokeRect(200, 25, 120, 30);
+  // context.fillStyle = '#00f';
+  // context.font = '20px Arial';
+  // context.strokeText('New Game', 210, 47);
+    context.font = '12px Arial';
+    context.strokeText('Can the first player force a win in seven turns or less?', 120, 47);
+
+  for (var i = 1; i < boardsize+1; i++) {
+      // horizontal
+      context.beginPath();
+      context.moveTo(interval * i+140, sy); // 140,80 ---- 140,640
+      context.lineTo(interval * i+140, ey);
+      context.closePath();
+      context.stroke();
+
+      // vertical
+      context.beginPath();
+      context.moveTo(sx, interval* i+40); // 180,40 ---- 740,40
+      context.lineTo(ex, interval* i+40);
+      context.closePath();
+      context.stroke();
+	  //alert(i);
+  }
+
+  for (var i = 1; i < boardsize+1; i++) {
+      // diagonal
+      context.beginPath();
+      context.moveTo(interval * i+140, sy);
+      context.lineTo(ex, ey - interval * (i-1));
+      context.closePath();
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(sx, interval* i+40);
+      context.lineTo(ex - interval * (i-1), ey);
+      context.closePath();
+      context.stroke();
+
+      // counter diagonal
+      context.beginPath();
+      context.moveTo(interval * i+140, sy);
+      context.lineTo(sx, interval * i + 40);
+      context.closePath();
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(ex, interval * i + 40);
+      context.lineTo(interval * i + 140, ey);
+      context.closePath();
+      context.stroke();
+  }
+}
+
+function play(e) {
+  var color;
+  var e=e||event;
+  var rect = canvas.getBoundingClientRect();
+  var px = e.clientX -160 - rect.left; // click is valid within surrounding 20 px
+  var py = e.clientY - 60 - rect.top;
+  var x = parseInt(px / 40);
+  var y = parseInt(py / 40);
+  //isNewGame(e.clientX, e.clientY);
+  if (px < 0 || py < 0 || x > boardsize-1 || y > boardsize-1 || chessData[x][y] != 0) {
+    return;
+  }
+  doCheck(x, y);
+}
+function chess(color, x, y) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.arc(x * 40 + 180, y * 40 + 80, 15, 0, Math.PI * 2, true);
+  context.closePath();
+  context.fill();
+  if (color == "white") {
+    chessData[x][y] = 1;
+  } else {
+    chessData[x][y] = 2;
+  }
+}
+function drawChess(color, x, y) { // 1 for white, 2 for black
+  if (x >= 0 && x < boardsize && y >= 0 && y < boardsize) {
+    if (color == "white") {
+      chess("white", x, y);
+      isWin("white", x, y);
+      isWhite = false;
+    } else {
+      chess("black", x, y);
+      isWin("black", x, y);
+      isWhite = true;
+    }
+  }
+  if(--step==0){
+    winner="DRAW";
+    alert(winner);
+  }
+}
+function doCheck(x, y) {
+  if (winner != '' && winner != null) { // game already ends, time to start new game
+    alert(winner);
+    return;
+  }
+  if (isWhite) {
+    color = "white";
+  } else {
+    color = "black";
+  }
+  drawChess(color, x, y);
+}
+
+function isNewGame(x, y) {
+  if (x> 200 && x< 320 && y < 55 && y > 25) {
+    if (confirm("New Game")) {
+      location.reload();
+    }
+  }
+}
+
+function isWin(color, x, y) {
+  var temp = 2;
+  if (color == "white") {
+    temp = 1;
+  }
+  console.log("temp=" + temp);
+  lrCount(temp, x, y);
+  tbCount(temp, x, y);
+  rtCount(temp, x, y);
+  rbCount(temp, x, y);
+}
+
+function lrCount(temp, x, y) {
+  var line = new Array(4);
+  var count = 0;
+  for (var i = x; i >= 0; i--) {
+    line[0] = i;
+    line[1] = y;
+    if (chessData[i][y] == temp) {
+      ++count;
+    } else {
+      i = -1;
+    }
+  }
+  for (var i = x; i < boardsize; i++) {
+    line[2] = i;
+    line[3] = y;
+    if (chessData[i][y] == temp) {
+      ++count;
+    } else {
+      i = 100;
+    }
+  }
+  success(line[0], line[1], line[2], line[3], temp, --count);
+}
+
+function tbCount(temp, x, y) {
+  var line = new Array(4);
+  var count = 0;
+  for (var i = y; i >= 0; i--) {
+    line[0] = x;
+    line[1] = i;
+    if (chessData[x][i] == temp) {
+      ++count;
+    } else {
+      i = -1;
+    }
+  }
+  for (var i = y; i < boardsize; i++) {
+    line[2] = x;
+    line[3] = i;
+    if (chessData[x][i] == temp) {
+      ++count;
+    } else {
+      i = 100;
+    }
+  }
+  success(line[0], line[1], line[2], line[3], temp, --count);
+}
+
+function rtCount(temp, x, y) {
+  var line = new Array(4);
+  var count = 0;
+
+  for (var i = x, j = y; i < boardsize && j >= 0;) {
+    line[0] = i;
+    line[1] = j;
+    if (chessData[i][j] == temp) {
+      ++count;
+    } else {
+      i = 100;
+    }
+    i++;
+    j--;
+  }
+  for (var i = x, j = y; i >= 0 && j < boardsize;) {
+    line[2] = i;
+    line[3] = j;
+    if (chessData[i][j] == temp) {
+      ++count;
+    } else {
+      i = -1;
+    }
+    i--;
+    j++;
+  }
+  success(line[0], line[1], line[2], line[3], temp, --count);
+}
+
+function rbCount(temp, x, y) {
+  var line = new Array(4);
+  var count = 0;
+
+  for (var i = x, j = y; i >= 0 && j >= 0;) {
+    line[0] = i;
+    line[1] = j;
+    if (chessData[i][j] == temp) {
+      ++count;
+    } else {
+      i = -1;
+    }
+    i--;
+    j--;
+  }
+  for (var i = x, j = y; i < boardsize && j < boardsize;) {
+    line[2] = i;
+    line[3] = j;
+    if (chessData[i][j] == temp) {
+      ++count;
+    } else {
+      i = 100;
+    }
+    i++;
+    j++;
+  }
+  success(line[0], line[1], line[2], line[3], temp, --count);
+}
+function success(a, b, c, d, temp, count) {
+  if (count == connect) {
+    context.beginPath();
+    context.lineWidth = 5;
+    context.strokeStyle = 'purple';
+    context.moveTo(40 * a + 180, 40 * b + 80);
+    context.lineTo(40 * c + 180, 40 * d + 80);
+    context.closePath();
+    context.stroke();
+    //winner = "Black wins!";
+    // if (temp == 1) {
+    //   winner = "White wins!";
+    // }
+      winner = document.getElementById("player1").value;
+      if (temp == 1) {
+        winner = document.getElementById("player2").value;
+      }
+    alert(winner + " wins!");
+
+      $.get('https://cims.nyu.edu/drecco2016/games/OpenFieldTicTacToe/saveScore.php', {
+          score: '1',
+          gamename: 'OpenFieldTicTacToe',
+          playername: winner
+      }).done(function(data) {
+          console.log("Saved success");
+          console.log(data);
+      }).fail(function(data) {
+          console.log("Saved failure");
+          console.log(data);
+      });
+  }
+}
+</script>
+</html>

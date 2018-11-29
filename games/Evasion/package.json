@@ -1,0 +1,16 @@
+{
+  "name": "evasion_new",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node app.js"
+  },
+  "author": "Demented_Banana",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.1.1",
+    "randomcolor": "^0.4.4"
+  }
+}
